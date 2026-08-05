@@ -25,7 +25,8 @@ Akses di browser: <http://localhost:5000>. Jika Traefik ikut dijalankan, domain 
 ### Linux / server VPS
 
 ```bash
-git clone --recurse-submodules https://github.com/mfaizras/rsu-aulia-agentic-chatbot-prototype.git && cd project-deployment
+git clone --recurse-submodules https://github.com/mfaizras/rsu-aulia-agentic-chatbot-prototype.git && cd rsu-aulia-agentic-chatbot-prototype
+
 ./install.sh
 ```
 
@@ -34,7 +35,8 @@ Instaler akan mengecek prasyarat, mengambil submodule, membuat file `.env` secar
 ### Windows (Docker Desktop)
 
 ```bat
-git clone --recurse-submodules https://github.com/mfaizras/rsu-aulia-agentic-chatbot-prototype.git && cd project-deployment
+git clone --recurse-submodules https://github.com/mfaizras/rsu-aulia-agentic-chatbot-prototype.git && cd rsu-aulia-agentic-chatbot-prototype
+
 install.bat
 ```
 
