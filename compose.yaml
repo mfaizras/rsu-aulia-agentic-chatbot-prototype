@@ -1,0 +1,100 @@
+name: rsu-aulia
+
+services:
+  database:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rsu_aulia}
+      POSTGRES_USER: ${POSTGRES_USER:-rsu_aulia}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - backend
+
+  web:
+    build:
+      context: ./rsu-aulia-web-service
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-rsu_aulia}:${POSTGRES_PASSWORD:-change-me}@database:5432/${POSTGRES_DB:-rsu_aulia}
+      SECRET_KEY: ${SECRET_KEY:-change-this-secret-key}
+      HUGGINGFACE_MODEL: ${HUGGINGFACE_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
+      WEB_WORKERS: ${WEB_WORKERS:-2}
+    command:
+      - /bin/sh
+      - -c
+      - python -m flask --app main init-db && exec gunicorn --bind 0.0.0.0:5000 --workers "$${WEB_WORKERS}" --access-logfile - main:app
+    expose:
+      - "5000"
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/doctors', timeout=5)"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - backend
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.rsu-aulia.rule=Host(`${DOMAIN:?Set DOMAIN in .env}`)"
+      - "traefik.http.routers.rsu-aulia.entrypoints=websecure"
+      - "traefik.http.routers.rsu-aulia.tls=true"
+      - "traefik.http.routers.rsu-aulia.tls.certresolver=letsencrypt"
+      - "traefik.http.services.rsu-aulia.loadbalancer.server.port=5000"
+
+  agent:
+    build:
+      context: ./rsu-aulia-agentic
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-rsu_aulia}:${POSTGRES_PASSWORD:-change-me}@database:5432/${POSTGRES_DB:-rsu_aulia}
+      DATABASE_URL_CHECKPOINTER: postgresql://${POSTGRES_USER:-rsu_aulia}:${POSTGRES_PASSWORD:-change-me}@database:5432/${POSTGRES_DB:-rsu_aulia}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?Set OPENAI_API_KEY in .env}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
+      OPENAI_TEMPERATURE: ${OPENAI_TEMPERATURE:-0.7}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:?Set TELEGRAM_BOT_TOKEN in .env}
+      TELEGRAM_MESSAGE_DEBOUNCE_SECONDS: ${TELEGRAM_MESSAGE_DEBOUNCE_SECONDS:-1}
+      TELEGRAM_CONCURRENT_UPDATES: ${TELEGRAM_CONCURRENT_UPDATES:-16}
+      ADMINISTRATIVE_API_BASE_URL: http://web:5000/api
+      ADMINISTRATIVE_API_TIMEOUT: ${ADMINISTRATIVE_API_TIMEOUT:-15}
+      PII_MASKING_ENABLED: ${PII_MASKING_ENABLED:-true}
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+    depends_on:
+      database:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+  huggingface_cache:
+
+networks:
+  backend:
+    driver: bridge
+  proxy:
+    external: true
+    name: proxy

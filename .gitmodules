@@ -1,0 +1,6 @@
+[submodule "rsu-aulia-agentic"]
+	path = rsu-aulia-agentic
+	url = https://github.com/mfaizras/rsu-aulia-agentic.git
+[submodule "rsu-aulia-web-service"]
+	path = rsu-aulia-web-service
+	url = https://github.com/mfaizras/rsu-aulia-web-service.git

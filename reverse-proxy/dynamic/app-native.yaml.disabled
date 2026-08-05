@@ -1,0 +1,16 @@
+# Hapus akhiran .disabled setelah domain dan port aplikasi native disesuaikan.
+http:
+  routers:
+    app-native:
+      rule: Host(`app2.domain-anda.com`)
+      entryPoints:
+        - websecure
+      service: app-native
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    app-native:
+      loadBalancer:
+        servers:
+          - url: http://host.docker.internal:3000
