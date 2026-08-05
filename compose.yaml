@@ -34,6 +34,8 @@ services:
       - python -m flask --app main init-db && exec gunicorn --bind 0.0.0.0:5000 --workers "$${WEB_WORKERS}" --access-logfile - main:app
     expose:
       - "5000"
+    ports:
+      - "${WEB_PORT:-5000}:5000"
     volumes:
       - huggingface_cache:/root/.cache/huggingface
     depends_on:
@@ -96,5 +98,4 @@ networks:
   backend:
     driver: bridge
   proxy:
-    external: true
     name: proxy

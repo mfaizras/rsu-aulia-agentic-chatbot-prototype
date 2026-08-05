@@ -9,6 +9,17 @@ Repo aplikasi `rsu-aulia-agentic` dan `rsu-aulia-web-service` dikelola sebagai *
 
 Hanya Traefik yang membuka port publik `80/443`. Gunicorn dan PostgreSQL hanya tersedia melalui jaringan internal Docker.
 
+### Akses lokal tanpa Traefik
+
+Service `web` juga memublikasikan port ke host (`localhost:5000`, bisa diubah lewat `WEB_PORT` di `.env`), sehingga stack bisa dijalankan dan diuji hanya di satu mesin tanpa reverse proxy:
+
+```bash
+cp .env.example .env   # isi minimal DOMAIN, OPENAI_API_KEY, TELEGRAM_BOT_TOKEN
+docker compose up -d --build
+```
+
+Akses di browser: <http://localhost:5000>. Jika Traefik ikut dijalankan, domain tetap dilayani di port 80/443 dan tidak bertabrakan karena keduanya berbagi network `proxy`.
+
 ## Instalasi cepat
 
 ### Linux / server VPS
