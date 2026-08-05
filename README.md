@@ -14,7 +14,7 @@ Hanya Traefik yang membuka port publik `80/443`. Gunicorn dan PostgreSQL hanya t
 ### Linux / server VPS
 
 ```bash
-git clone --recurse-submodules <url-repo-deployment-ini>.git && cd project-deployment
+git clone --recurse-submodules https://github.com/mfaizras/rsu-aulia-agentic-chatbot-prototype.git && cd project-deployment
 ./install.sh
 ```
 
@@ -23,7 +23,7 @@ Instaler akan mengecek prasyarat, mengambil submodule, membuat file `.env` secar
 ### Windows (Docker Desktop)
 
 ```bat
-git clone --recurse-submodules <url-repo-deployment-ini>.git && cd project-deployment
+git clone --recurse-submodules https://github.com/mfaizras/rsu-aulia-agentic-chatbot-prototype.git && cd project-deployment
 install.bat
 ```
 
